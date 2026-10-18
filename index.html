@@ -14,6 +14,9 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Return — A Reconciliation Companion</title>
+<script>
+  try { const t = localStorage.getItem('return.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (_) {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Fonts load without blocking first paint; system fonts show until they arrive (or if offline) -->
@@ -177,6 +180,14 @@ section[hidden]{ display:none; }
 @keyframes fade{ from{opacity:0} to{opacity:1} }
 @media (prefers-reduced-motion: reduce){ .fade{animation:none} body,nav{transition:none} }
 
+.topbar{ display:flex; justify-content:flex-end; gap:8px; margin:-12px -8px 4px 0; }
+.icon-btn{
+  display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--surface);
+  color:var(--muted); font-size:.85rem; padding:7px 12px; border-radius:999px;
+}
+.icon-btn svg{ width:16px; height:16px; flex:none; }
+.about-list{ padding-left:1.1em; }
+.about-list li{ margin:.35em 0; }
 .credit{ font-size:.8rem; color:var(--muted); margin-top:.8em; }
 .credit a{ color:var(--stole); }
 .privacy{ font-size:.85rem; color:var(--muted); display:flex; gap:8px; align-items:flex-start; margin-top:2.4em; }
@@ -184,6 +195,16 @@ section[hidden]{ display:none; }
 </head>
 <body>
 <main>
+<div class="topbar">
+  <button class="icon-btn" id="themeBtn" aria-label="Change appearance">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>
+    <span id="themeLabel">Auto</span>
+  </button>
+  <button class="icon-btn" id="aboutBtn" aria-label="About Return">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.9" r="1" fill="currentColor"/></svg>
+    <span>About</span>
+  </button>
+</div>
 
 <!-- 1. PREPARE -->
 <section id="s-prepare" class="fade">
@@ -208,7 +229,6 @@ section[hidden]{ display:none; }
   <div class="actions"><button class="primary" data-go="examine">Begin the examination</button></div>
 
   <p class="privacy">🔒 <span>Your examination isn't kept unless you choose to record it afterward. Records stay on this device only, and you can delete any of them at any time.</span></p>
-  <p class="credit">Built by Claude using material provided by and under the guidance of Keith Francis. Licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="license">CC BY-NC-SA 4.0</a>.</p>
 </section>
 
 <!-- 2. EXAMINE -->
@@ -372,6 +392,38 @@ section[hidden]{ display:none; }
   <div class="actions"><button class="primary" id="unlockBtn">Unlock</button></div>
   <p class="hint">Forgotten passcode? The journal can't be recovered without it, but you can erase it and start fresh.</p>
   <button class="small danger" id="eraseLocked">Erase journal</button>
+</section>
+
+<!-- ABOUT -->
+<section id="s-about" hidden>
+  <div class="step-no">About</div>
+  <h1>Return</h1>
+  <p class="lede">A companion for the Sacrament of Reconciliation: to prepare well, confess with confidence, and remember the mercy received.</p>
+
+  <h2>How it works</h2>
+  <ol class="about-list">
+    <li><strong>Prepare</strong>: pray for light and note how long it's been since your last confession.</li>
+    <li><strong>Examine</strong>: reflect on the Ten Commandments and the Precepts of the Church.</li>
+    <li><strong>Review</strong>: see what you've marked, gathered in one place.</li>
+    <li><strong>Confess</strong>: follow the rite step by step, with the words to say.</li>
+    <li><strong>Afterward</strong>: give thanks, then record the confession or clear it.</li>
+  </ol>
+  <p>The <strong>Journal</strong> keeps the confessions you choose to record: what you brought, your penance, and the grace you received.</p>
+
+  <h2>Privacy</h2>
+  <p>Your examination is held only while the app is open and is kept only if you record it. The journal is stored on this device alone and is never sent anywhere. You can protect it with a passcode, which encrypts it, and delete any entry, or everything, at any time.</p>
+
+  <h2>Offline</h2>
+  <p>After the first visit, Return works without a connection. For the most reliable storage, add it to your Home Screen.</p>
+
+  <h2>Sources</h2>
+  <p>Scripture is from the Douay-Rheims Bible and the Act of Contrition is the traditional form, both in the public domain. The examination questions and the prayer of thanksgiving are original. The words of absolution are described rather than quoted.</p>
+
+  <div class="note">Return is an aid to preparation, not a substitute for the guidance of a priest. When in doubt about anything, bring it to confession and ask.</div>
+
+  <p class="credit">Version 1.0 · Built by Claude using material provided by and under the guidance of Keith Francis. Licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="license">CC BY-NC-SA 4.0</a>.</p>
+
+  <div class="actions"><button class="primary" id="aboutBack">Back</button></div>
 </section>
 
 </main>
@@ -774,6 +826,7 @@ function show(step){
   const navStep = step === 'record' ? (draft && !draft.isNew || draft && draft.past ? 'journal' : 'after') : step === 'lock' ? 'journal' : step;
   document.querySelectorAll('nav button').forEach(b => b.dataset.go === navStep ? b.setAttribute('aria-current','step') : b.removeAttribute('aria-current'));
   document.body.classList.toggle('after', step === 'after' || step === 'record');
+  $('aboutBtn').setAttribute('aria-pressed', step === 'about');
   window.scrollTo({ top:0 });
 }
 function go(step){
@@ -792,6 +845,29 @@ $('clearAll').addEventListener('click', () => {
   const btn = $('clearAll'); btn.textContent = 'Cleared'; btn.disabled = true;
   setTimeout(() => { btn.textContent = 'Clear without recording'; btn.disabled = false; go('prepare'); }, 1200);
 });
+
+/* ---------- Appearance: Auto (follows the phone) → Light → Dark ---------- */
+const THEMES = ['auto','light','dark'], THEME_LABEL = { auto:'Auto', light:'Light', dark:'Dark' };
+function currentTheme(){ return document.documentElement.dataset.theme || 'auto'; }
+function applyTheme(t){
+  if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  try { t === 'auto' ? localStorage.removeItem('return.theme') : localStorage.setItem('return.theme', t); } catch (_) {}
+  $('themeLabel').textContent = THEME_LABEL[t];
+  $('themeBtn').setAttribute('aria-label', 'Appearance: ' + THEME_LABEL[t] + '. Tap to change.');
+  const dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#120E17' : '#3E2A55');
+}
+$('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length]));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme(currentTheme()));
+applyTheme(currentTheme());
+
+/* ---------- About ---------- */
+let beforeAbout = 'prepare';
+$('aboutBtn').addEventListener('click', () => {
+  if (current === 'about') return;
+  beforeAbout = current; current = 'about'; show('about');
+});
+$('aboutBack').addEventListener('click', () => go(beforeAbout));
 
 /* ---------- Start ---------- */
 loadPlain(); fillSince(); renderOpening();
