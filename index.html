@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Return">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="app.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Return — A Reconciliation Companion</title>
@@ -189,15 +189,14 @@ section[hidden]{ display:none; }
 .about-list{ padding-left:1.1em; }
 .about-list li{ margin:.35em 0; }
 .install{
-  display:flex; gap:14px; align-items:center; background:var(--surface); border:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; background:var(--surface); border:1px solid var(--line);
   border-left:3px solid var(--stole); border-radius:10px; padding:14px 16px; margin:0 0 1.4em;
 }
 .install[hidden]{ display:none; }
 .install img{ width:44px; height:44px; border-radius:10px; flex:none; }
-.install div{ flex:1; font-size:.95rem; }
+.install div{ flex:1 1 12rem; font-size:.95rem; }
 .install strong{ display:block; color:var(--ink); }
 .install span{ color:var(--muted); font-size:.88rem; }
-.install .x{ align-self:flex-start; }
 .credit{ font-size:.8rem; color:var(--muted); margin-top:.8em; }
 .credit a{ color:var(--stole); }
 .privacy{ font-size:.85rem; color:var(--muted); display:flex; gap:8px; align-items:flex-start; margin-top:2.4em; }
@@ -220,9 +219,9 @@ section[hidden]{ display:none; }
 <section id="s-prepare" class="fade">
   <div class="install" id="installCard" hidden>
     <img src="icons/icon-192.png" alt="">
-    <div><strong>Install Return</strong><span id="installText">Add it to your Home Screen so it opens instantly, even without a signal.</span></div>
+    <div><strong>Install Return</strong><span id="installText">Install this app on your device for quick, offline access.</span></div>
     <button class="small primary" id="installBtn" hidden>Install</button>
-    <button class="x" id="installDismiss" aria-label="Dismiss">×</button>
+    <button class="small quiet" id="installDismiss">Not now</button>
   </div>
   <div class="step-no">First, be still</div>
   <h1>Return</h1>
@@ -895,12 +894,12 @@ window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();                 // show our own button instead of waiting on the browser's banner
   deferredInstall = e;
   if (isStandalone() || installDismissed()) return;
-  $('installText').textContent = 'Add it to your Home Screen so it opens instantly, even without a signal.';
+  $('installText').textContent = 'Install this app on your device for quick, offline access.';
   $('installBtn').hidden = false; $('installCard').hidden = false;
 });
 $('installBtn').addEventListener('click', async () => {
   if (!deferredInstall) return;
-  deferredInstall.prompt();
+  $('installCard').hidden = true; deferredInstall.prompt();
   await deferredInstall.userChoice.catch(() => null);
   deferredInstall = null; $('installCard').hidden = true;
 });
@@ -911,14 +910,14 @@ $('installDismiss').addEventListener('click', () => {
 });
 // iOS Safari has no install prompt: show the manual steps instead
 if (isIOS() && !isStandalone() && !installDismissed()){
-  $('installText').textContent = 'Tap the Share button, then “Add to Home Screen”, so it opens instantly, even without a signal.';
+  $('installText').textContent = 'To install, tap the Share button, then “Add to Home Screen”.';
   $('installCard').hidden = false;
 }
 
 /* ---------- Start ---------- */
 loadPlain(); fillSince(); renderOpening();
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>

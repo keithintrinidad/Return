@@ -10,10 +10,10 @@
 //
 // Only the app's own files and fonts are cached. Your examination and journal are never stored here.
 
-const VERSION = 'return-v5';
+const VERSION = 'return-v6';
 const SHELL_CACHE = VERSION + '-shell';
 const FONT_CACHE = 'return-fonts-v1';           // kept across app versions so fonts aren't refetched
-const CORE = ['./', './index.html', './manifest.json'];
+const CORE = ['./', './index.html', './app.webmanifest'];
 const EXTRAS = ['./icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600&display=swap';
 const NET_TIMEOUT = 4000;   // ms before giving up on the network for a background or uncached fetch
