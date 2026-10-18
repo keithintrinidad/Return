@@ -1,15 +1,17 @@
 {
+  "id": "/Return/",
   "name": "Return — A Reconciliation Companion",
   "short_name": "Return",
   "description": "Prepare, examine your conscience, and walk through the Sacrament of Reconciliation.",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/Return/?source=pwa",
+  "scope": "/Return/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#F2F0F5",
   "theme_color": "#3E2A55",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

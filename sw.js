@@ -10,7 +10,7 @@
 //
 // Only the app's own files and fonts are cached. Your examination and journal are never stored here.
 
-const VERSION = 'return-v4';
+const VERSION = 'return-v5';
 const SHELL_CACHE = VERSION + '-shell';
 const FONT_CACHE = 'return-fonts-v1';           // kept across app versions so fonts aren't refetched
 const CORE = ['./', './index.html', './manifest.json'];

@@ -188,6 +188,16 @@ section[hidden]{ display:none; }
 .icon-btn svg{ width:16px; height:16px; flex:none; }
 .about-list{ padding-left:1.1em; }
 .about-list li{ margin:.35em 0; }
+.install{
+  display:flex; gap:14px; align-items:center; background:var(--surface); border:1px solid var(--line);
+  border-left:3px solid var(--stole); border-radius:10px; padding:14px 16px; margin:0 0 1.4em;
+}
+.install[hidden]{ display:none; }
+.install img{ width:44px; height:44px; border-radius:10px; flex:none; }
+.install div{ flex:1; font-size:.95rem; }
+.install strong{ display:block; color:var(--ink); }
+.install span{ color:var(--muted); font-size:.88rem; }
+.install .x{ align-self:flex-start; }
 .credit{ font-size:.8rem; color:var(--muted); margin-top:.8em; }
 .credit a{ color:var(--stole); }
 .privacy{ font-size:.85rem; color:var(--muted); display:flex; gap:8px; align-items:flex-start; margin-top:2.4em; }
@@ -208,6 +218,12 @@ section[hidden]{ display:none; }
 
 <!-- 1. PREPARE -->
 <section id="s-prepare" class="fade">
+  <div class="install" id="installCard" hidden>
+    <img src="icons/icon-192.png" alt="">
+    <div><strong>Install Return</strong><span id="installText">Add it to your Home Screen so it opens instantly, even without a signal.</span></div>
+    <button class="small primary" id="installBtn" hidden>Install</button>
+    <button class="x" id="installDismiss" aria-label="Dismiss">×</button>
+  </div>
   <div class="step-no">First, be still</div>
   <h1>Return</h1>
   <p class="lede">A companion for the Sacrament of Reconciliation: prepare, examine your conscience, walk through the rite, and keep a record of the mercy you've received.</p>
@@ -868,6 +884,36 @@ $('aboutBtn').addEventListener('click', () => {
   beforeAbout = current; current = 'about'; show('about');
 });
 $('aboutBack').addEventListener('click', () => go(beforeAbout));
+
+/* ---------- Install prompt ---------- */
+let deferredInstall = null;
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const installDismissed = () => { try { return sessionStorage.getItem('return.installDismissed') === '1'; } catch (_) { return false; } };
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();                 // show our own button instead of waiting on the browser's banner
+  deferredInstall = e;
+  if (isStandalone() || installDismissed()) return;
+  $('installText').textContent = 'Add it to your Home Screen so it opens instantly, even without a signal.';
+  $('installBtn').hidden = false; $('installCard').hidden = false;
+});
+$('installBtn').addEventListener('click', async () => {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  await deferredInstall.userChoice.catch(() => null);
+  deferredInstall = null; $('installCard').hidden = true;
+});
+window.addEventListener('appinstalled', () => { deferredInstall = null; $('installCard').hidden = true; });
+$('installDismiss').addEventListener('click', () => {
+  $('installCard').hidden = true;
+  try { sessionStorage.setItem('return.installDismissed', '1'); } catch (_) {}
+});
+// iOS Safari has no install prompt: show the manual steps instead
+if (isIOS() && !isStandalone() && !installDismissed()){
+  $('installText').textContent = 'Tap the Share button, then “Add to Home Screen”, so it opens instantly, even without a signal.';
+  $('installCard').hidden = false;
+}
 
 /* ---------- Start ---------- */
 loadPlain(); fillSince(); renderOpening();
