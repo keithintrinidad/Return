@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3E2A55">
+<meta name="description" content="A personal companion for the Sacrament of Reconciliation.">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Return">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Return — A Reconciliation Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts load without blocking first paint; system fonts show until they arrive (or if offline) -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet"></noscript>
+<style>
+:root{
+  --bg:#F2F0F5; --surface:#FFFFFF; --ink:#221B2B; --muted:#625872;
+  --violet:#3E2A55; --stole:#6B4C8A; --line:#DCD5E5; --gold:#9A7432; --danger:#9B2C3B;
+  --check:#6B4C8A; --nav:#3E2A55; --nav-ink:#E9E1F2; --nav-active:#FFFFFF; --on-stole:#FFFFFF;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17121D; --surface:#221B2B; --ink:#EDE7F3; --muted:#B3A8C2;
+    --violet:#C9B5E4; --stole:#A98AD0; --line:#3A3046; --gold:#D8B46E; --danger:#E58A97;
+    --check:#A98AD0; --nav:#120E17; --nav-ink:#A99DB8; --nav-active:#FFFFFF; --on-stole:#17121D;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17121D; --surface:#221B2B; --ink:#EDE7F3; --muted:#B3A8C2;
+  --violet:#C9B5E4; --stole:#A98AD0; --line:#3A3046; --gold:#D8B46E; --danger:#E58A97;
+  --check:#A98AD0; --nav:#120E17; --nav-ink:#A99DB8; --nav-active:#FFFFFF; --on-stole:#17121D;
+  color-scheme:dark;
+}
+/* Afterward and recording: the violet gives way to light */
+body.after{ --bg:#FBF8F0; --surface:#FFFFFF; --violet:#7A5A1E; --stole:#9A7432; --line:#EADFC6; --nav:#7A5A1E; --check:#9A7432; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) body.after{ --bg:#1D1910; --surface:#29231A; --violet:#E6C784; --stole:#D8B46E; --line:#3F3626; --nav:#120F09; --check:#D8B46E; }
+}
+:root[data-theme="dark"] body.after{ --bg:#1D1910; --surface:#29231A; --violet:#E6C784; --stole:#D8B46E; --line:#3F3626; --nav:#120F09; --check:#D8B46E; }
+
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:400 17px/1.55 "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  transition:background-color .8s ease;
+  -webkit-font-smoothing:antialiased;
+}
+main{ max-width:640px; margin:0 auto; padding:28px 22px calc(96px + env(safe-area-inset-bottom,0px)); }
+h1,h2,.prayer,.scripture{ font-family:"Cormorant Garamond", "Iowan Old Style", Georgia, serif; }
+h1{ font-weight:600; font-size:2.6rem; line-height:1.05; margin:.2em 0 .3em; color:var(--violet); letter-spacing:-.01em; }
+h2{ font-weight:600; font-size:1.65rem; line-height:1.2; margin:1.6em 0 .4em; color:var(--violet); }
+h3{ font-size:1rem; margin:1.2em 0 .3em; color:var(--muted); font-weight:600; }
+p{ margin:.6em 0; }
+.lede{ color:var(--muted); font-size:1.05rem; }
+.step-no{ font-family:"Cormorant Garamond", Georgia, serif; font-style:italic; color:var(--stole); font-size:1.15rem; }
+
+.prayer{ font-size:1.35rem; line-height:1.5; margin:1.2em 0; padding:0 0 0 18px; border-left:3px solid var(--stole); }
+.scripture{ font-style:italic; font-size:1.25rem; line-height:1.45; color:var(--violet); margin:1.4em 0; }
+.scripture cite{ display:block; font-style:normal; font-family:"Source Sans 3",sans-serif; font-size:.85rem; color:var(--muted); margin-top:.3em; }
+
+.note{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:1.2em 0; font-size:.95rem; color:var(--muted); }
+.note strong{ color:var(--ink); }
+
+label.field{ display:block; font-weight:600; margin:1.2em 0 .4em; }
+.hint{ font-size:.88rem; color:var(--muted); margin:-.2em 0 .5em; }
+input[type=text], input[type=password], input[type=date], textarea{
+  width:100%; font:inherit; color:var(--ink); background:var(--surface);
+  border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+}
+textarea{ min-height:110px; resize:vertical; }
+.toggle{ display:flex; gap:10px; align-items:flex-start; margin:.8em 0; cursor:pointer; }
+input[type=checkbox]{ accent-color:var(--check); width:20px; height:20px; flex:none; margin:3px 0 0; }
+
+/* Examination */
+details.cmd{ border-top:1px solid var(--line); }
+details.cmd:last-of-type{ border-bottom:1px solid var(--line); }
+details.cmd summary{ list-style:none; cursor:pointer; padding:16px 2px; display:flex; gap:14px; align-items:baseline; }
+details summary::-webkit-details-marker{ display:none; }
+.cmd-num{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.5rem; color:var(--stole); width:1.6em; flex:none; text-align:right; }
+.cmd-title{ flex:1; font-weight:600; }
+.cmd-count{ font-size:.85rem; color:var(--stole); min-width:1.2em; text-align:right; }
+.cmd-body{ padding:0 0 16px 0; }
+.q{ display:flex; gap:12px; padding:8px 4px 8px 0; cursor:pointer; align-items:flex-start; }
+.q span{ flex:1; }
+.q.on span{ color:var(--violet); }
+
+/* Review lists */
+.review-group ul{ margin:0; padding-left:1.1em; }
+.review-group li{ margin:.3em 0; }
+.empty{ color:var(--muted); font-style:italic; }
+
+/* Rite */
+ol.rite{ list-style:none; padding:0; margin:1em 0; counter-reset:r; }
+ol.rite > li{ counter-increment:r; position:relative; padding:0 0 1.4em 44px; }
+ol.rite > li::before{
+  content:counter(r); position:absolute; left:0; top:0; width:30px; height:30px; border-radius:50%;
+  border:1.5px solid var(--stole); color:var(--stole); display:grid; place-items:center;
+  font-family:"Cormorant Garamond",Georgia,serif; font-size:1.1rem;
+}
+ol.rite > li::after{ content:""; position:absolute; left:15px; top:34px; bottom:4px; width:1px; background:var(--line); }
+ol.rite > li:last-child::after{ display:none; }
+.rite h4{ margin:0 0 .2em; font-size:1rem; }
+.say{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.25rem; color:var(--violet); margin:.3em 0; }
+.say em{ color:var(--muted); font-family:"Source Sans 3",sans-serif; font-size:.9rem; font-style:normal; }
+
+/* Buttons */
+button{
+  font:600 1rem "Source Sans 3",sans-serif; border-radius:999px; padding:12px 22px; cursor:pointer;
+  border:1.5px solid var(--stole); background:transparent; color:var(--stole);
+}
+button.primary{ background:var(--stole); color:var(--on-stole); border-color:var(--stole); }
+body.after button.primary{ color:#FFFFFF; }
+button.quiet{ border-color:transparent; padding-left:8px; padding-right:8px; }
+button.danger{ border-color:var(--danger); color:var(--danger); }
+button.small{ font-size:.9rem; padding:8px 16px; }
+button:disabled{ opacity:.5; cursor:default; }
+.actions{ display:flex; gap:12px; flex-wrap:wrap; margin:2em 0 1em; align-items:center; }
+:focus-visible{ outline:2px solid var(--stole); outline-offset:3px; }
+
+/* Record form: editable item list */
+ul.items{ list-style:none; margin:0; padding:0; }
+ul.items li{ display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--line); }
+ul.items li span{ flex:1; }
+ul.items li small{ display:block; color:var(--muted); font-size:.8rem; }
+.x{ border:0; background:transparent; color:var(--muted); font-size:1.3rem; line-height:1; padding:2px 8px; border-radius:6px; }
+
+/* Journal */
+.since-last{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.4rem; color:var(--violet); margin:.2em 0 1em; }
+.pattern{ display:grid; grid-template-columns:auto 1fr auto; gap:6px 12px; align-items:center; font-size:.92rem; margin:.6em 0 0; }
+.pattern .lbl{ color:var(--muted); }
+.pattern .bar{ height:8px; border-radius:4px; background:var(--stole); opacity:.75; }
+.pattern .num{ color:var(--muted); text-align:right; }
+details.entry{ border-top:1px solid var(--line); }
+details.entry:last-of-type{ border-bottom:1px solid var(--line); }
+details.entry summary{ list-style:none; cursor:pointer; padding:14px 2px; }
+.entry-date{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.35rem; color:var(--violet); display:block; line-height:1.2; }
+.entry-sub{ font-size:.9rem; color:var(--muted); }
+.entry-body{ padding:0 0 18px; }
+.grace{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.2rem; line-height:1.5; border-left:3px solid var(--gold); padding-left:14px; margin:.6em 0; white-space:pre-wrap; }
+.plain{ white-space:pre-wrap; }
+details.settings{ margin-top:2.6em; border:1px solid var(--line); border-radius:10px; padding:0 16px; background:var(--surface); }
+details.settings summary{ list-style:none; cursor:pointer; padding:14px 0; font-weight:600; }
+details.settings > div{ padding-bottom:16px; }
+.status{ font-size:.9rem; color:var(--stole); min-height:1.3em; margin:.4em 0; }
+
+/* Bottom nav: five steps, then the journal */
+nav{
+  position:fixed; left:0; right:0; bottom:0; background:var(--nav);
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));
+  transition:background-color .8s ease; z-index:10;
+}
+nav ol{ list-style:none; margin:0 auto; padding:0; display:flex; max-width:640px; }
+nav li{ flex:1; }
+nav li.journal{ border-left:1px solid rgba(255,255,255,.18); margin-left:4px; padding-left:4px; }
+nav button{
+  width:100%; border:0; border-radius:8px; background:transparent; color:var(--nav-ink);
+  padding:6px 2px; font-size:.74rem; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:2px;
+}
+nav button .n{ font-family:"Cormorant Garamond",Georgia,serif; font-size:1.25rem; line-height:1; }
+nav button[aria-current="step"]{ color:var(--nav-active); background:rgba(255,255,255,.1); }
+
+section[hidden]{ display:none; }
+.fade{ animation:fade .35s ease; }
+@keyframes fade{ from{opacity:0} to{opacity:1} }
+@media (prefers-reduced-motion: reduce){ .fade{animation:none} body,nav{transition:none} }
+
+.credit{ font-size:.8rem; color:var(--muted); margin-top:.8em; }
+.credit a{ color:var(--stole); }
+.privacy{ font-size:.85rem; color:var(--muted); display:flex; gap:8px; align-items:flex-start; margin-top:2.4em; }
+</style>
+</head>
+<body>
+<main>
+
+<!-- 1. PREPARE -->
+<section id="s-prepare" class="fade">
+  <div class="step-no">First, be still</div>
+  <h1>Return</h1>
+  <p class="lede">A companion for the Sacrament of Reconciliation: prepare, examine your conscience, walk through the rite, and keep a record of the mercy you've received.</p>
+
+  <p class="scripture">“Have mercy on me, O God, according to thy great mercy. And according to the multitude of thy tender mercies blot out my iniquity.”<cite>Psalm 50:3 (51:1), Douay-Rheims</cite></p>
+
+  <h2>Ask for light</h2>
+  <p>Before you look at your sins, look at God. Ask the Holy Spirit to show you what you need to see, honestly and without fear.</p>
+  <div class="prayer">Come, Holy Spirit, fill the hearts of thy faithful and kindle in them the fire of thy love. Enlighten my mind to know my sins, move my heart to sorrow for them, and give me the grace to confess them humbly and to amend my life. Amen.</div>
+
+  <label class="field" for="since">Time since your last confession</label>
+  <input type="text" id="since" placeholder="e.g. three months" autocomplete="off">
+  <label class="toggle"><input type="checkbox" id="first"> <span>This will be my first confession</span></label>
+
+  <div class="note">
+    <strong>What to bring.</strong> The Church asks that every mortal sin be confessed by its kind and, as nearly as you can, how often. A sin is mortal when it involves grave matter and is committed with full knowledge and deliberate consent (CCC 1857). Confessing venial sins is also strongly encouraged. Aim for honesty, not anxiety; if you are unsure about something, simply bring it and ask the priest.
+  </div>
+
+  <div class="actions"><button class="primary" data-go="examine">Begin the examination</button></div>
+
+  <p class="privacy">🔒 <span>Your examination isn't kept unless you choose to record it afterward. Records stay on this device only, and you can delete any of them at any time.</span></p>
+  <p class="credit">Built by Claude using material provided by and under the guidance of Keith Francis. Licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="license">CC BY-NC-SA 4.0</a>.</p>
+</section>
+
+<!-- 2. EXAMINE -->
+<section id="s-examine" hidden>
+  <div class="step-no">In the light of the Commandments</div>
+  <h1>Examine</h1>
+  <p class="lede">Read slowly. Tick anything that applies; it gathers into a list for your review.</p>
+  <div id="exam"></div>
+
+  <label class="field" for="notes">Anything else on your heart</label>
+  <textarea id="notes" placeholder="Good you failed to do, patterns you've noticed, things to ask the priest about…"></textarea>
+
+  <div class="actions"><button class="primary" data-go="review">Review my list</button></div>
+</section>
+
+<!-- 3. REVIEW -->
+<section id="s-review" hidden>
+  <div class="step-no">Gather it together</div>
+  <h1>Review</h1>
+  <p class="lede">This is your list to take in with you. Glance at it before you enter, then put the phone away.</p>
+  <div id="review"></div>
+  <p class="scripture">“If we confess our sins, he is faithful and just, to forgive us our sins, and to cleanse us from all iniquity.”<cite>1 John 1:9, Douay-Rheims</cite></p>
+  <div class="actions"><button class="primary" data-go="confess">Walk through the rite</button></div>
+</section>
+
+<!-- 4. CONFESS -->
+<section id="s-confess" hidden>
+  <div class="step-no">In the confessional</div>
+  <h1>Confess</h1>
+  <p class="lede">You can kneel behind the screen or sit face to face, whichever you prefer. The priest will guide you if you lose your place.</p>
+
+  <ol class="rite">
+    <li><h4>Greeting</h4>
+      <p>The priest welcomes you. Make the Sign of the Cross.</p>
+      <p class="say">In the name of the Father, and of the Son, and of the Holy Spirit. Amen.</p></li>
+    <li><h4>Begin</h4>
+      <p class="say" id="openingLine">Bless me, Father, for I have sinned.</p>
+      <p>The priest may invite you to trust in God's mercy, or read a short passage of Scripture.</p></li>
+    <li><h4>Confess your sins</h4>
+      <p>Name them simply and directly: mortal sins by kind and number as best you can, then any venial sins. When you've finished:</p>
+      <p class="say">For these and all the sins of my past life, I am sorry.</p></li>
+    <li><h4>Counsel and penance</h4>
+      <p>The priest may offer advice and will give you a penance: a prayer or an act. If you don't understand it, ask.</p></li>
+    <li><h4>Act of Contrition</h4>
+      <p>When invited, pray aloud:</p>
+      <div class="prayer">O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to sin no more and to avoid the near occasion of sin. Amen.</div>
+      <p>If the words won't come, the tax collector's prayer is enough:</p>
+      <p class="say">O God, be merciful to me a sinner. <em>Luke 18:13</em></p></li>
+    <li><h4>Absolution</h4>
+      <p>The priest extends his hand over you and prays the words of absolution. Make the Sign of the Cross as he names the Trinity, and answer:</p>
+      <p class="say">Amen.</p></li>
+    <li><h4>Dismissal</h4>
+      <p>The priest may say, “Give thanks to the Lord, for he is good.”</p>
+      <p class="say">His mercy endures for ever.</p>
+      <p>Thank him, and go in peace.</p></li>
+  </ol>
+
+  <div class="actions"><button class="primary" data-go="after">I have been absolved</button></div>
+</section>
+
+<!-- 5. AFTERWARD -->
+<section id="s-after" hidden>
+  <div class="step-no">Go in peace</div>
+  <h1>Afterward</h1>
+  <p class="scripture">“Blessed are they whose iniquities are forgiven, and whose sins are covered.”<cite>Psalm 31:1 (32:1), Douay-Rheims</cite></p>
+
+  <label class="field" for="penanceText">My penance</label>
+  <input type="text" id="penanceText" placeholder="e.g. a decade of the Rosary" autocomplete="off">
+  <label class="toggle"><input type="checkbox" id="penance"> <span>I have completed my penance</span></label>
+  <p class="hint" id="penanceHint">Do it soon, ideally before you leave the church.</p>
+
+  <h2>Give thanks</h2>
+  <div class="prayer">Lord Jesus, you have met me here and sent me away clean. Thank you for your mercy, which is greater than all my sin. Let me not return to what you have forgiven; keep me close to you, and make me merciful to others as you have been merciful to me. Amen.</div>
+
+  <div class="note"><strong>Remember the mercy.</strong> You can record this confession in your journal: what you brought, your penance, and the grace you received. Or you can clear it and let it go entirely. Either is a good choice.</div>
+
+  <div class="actions">
+    <button class="primary" id="recordBtn">Record this confession</button>
+    <button id="clearAll">Clear without recording</button>
+  </div>
+</section>
+
+<!-- RECORD (new or edit) -->
+<section id="s-record" hidden>
+  <div class="step-no" id="recordKicker">For remembrance</div>
+  <h1 id="recordTitle">Record</h1>
+  <p class="lede">Keep what helps you remember God's mercy. Remove anything you'd rather not keep.</p>
+
+  <label class="field" for="rDate">Date</label>
+  <input type="date" id="rDate">
+  <label class="field" for="rPlace">Where</label>
+  <input type="text" id="rPlace" placeholder="Church, and the priest if you like" autocomplete="off">
+
+  <label class="field">What I brought</label>
+  <ul class="items" id="rItems"></ul>
+  <p class="empty" id="rItemsEmpty">No items from the examination.</p>
+  <label class="field" for="rNotes">In my own words</label>
+  <textarea id="rNotes"></textarea>
+
+  <label class="field" for="rPenance">Penance</label>
+  <input type="text" id="rPenance" autocomplete="off">
+  <label class="toggle"><input type="checkbox" id="rPenanceDone"> <span>Completed</span></label>
+
+  <label class="field" for="rGrace">The grace I received</label>
+  <p class="hint">What did you hear in the counsel? Where did you sense God's mercy? What do you want to carry forward?</p>
+  <textarea id="rGrace" style="min-height:150px"></textarea>
+
+  <div class="actions">
+    <button class="primary" id="rSave">Save to journal</button>
+    <button class="quiet" id="rCancel">Cancel</button>
+  </div>
+</section>
+
+<!-- JOURNAL -->
+<section id="s-journal" hidden>
+  <div class="step-no">Where I've been</div>
+  <h1>Journal</h1>
+  <div id="jSummary"></div>
+  <div id="jPattern"></div>
+  <h2>Confessions</h2>
+  <div id="jList"></div>
+  <div class="actions"><button class="small" id="addPast">Add a past confession</button></div>
+
+  <details class="settings">
+    <summary>Privacy and records</summary>
+    <div>
+      <h3>Passcode</h3>
+      <p class="hint" id="pcState"></p>
+      <div id="pcSet">
+        <input type="password" id="pc1" placeholder="New passcode" autocomplete="new-password" style="margin-bottom:8px">
+        <input type="password" id="pc2" placeholder="Confirm passcode" autocomplete="new-password">
+        <div class="actions" style="margin:.8em 0"><button class="small" id="pcSave">Set passcode</button><button class="small quiet" id="pcRemove" hidden>Remove passcode</button></div>
+      </div>
+      <p class="status" id="pcStatus"></p>
+
+      <h3>Backup</h3>
+      <p class="hint">Your journal lives only on this device. If you clear your browser data or lose the phone, it's gone. A backup file is not encrypted, so keep it somewhere private.</p>
+      <div class="actions" style="margin:.8em 0">
+        <button class="small" id="exportBtn">Export backup</button>
+        <button class="small" id="importBtn">Import backup</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+      <p class="status" id="bkStatus"></p>
+
+      <h3>Delete</h3>
+      <div class="actions" style="margin:.8em 0">
+        <button class="small danger" id="deleteAll">Delete all records</button>
+        <button class="small quiet" id="lockNow" hidden>Lock now</button>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- UNLOCK -->
+<section id="s-lock" hidden>
+  <div class="step-no">Kept in confidence</div>
+  <h1>Journal locked</h1>
+  <p class="lede">Enter your passcode to open your journal.</p>
+  <input type="password" id="unlockPc" placeholder="Passcode" autocomplete="current-password">
+  <p class="status" id="unlockStatus"></p>
+  <div class="actions"><button class="primary" id="unlockBtn">Unlock</button></div>
+  <p class="hint">Forgotten passcode? The journal can't be recovered without it, but you can erase it and start fresh.</p>
+  <button class="small danger" id="eraseLocked">Erase journal</button>
+</section>
+
+</main>
+
+<nav aria-label="Steps">
+  <ol>
+    <li><button data-go="prepare" aria-current="step"><span class="n">1</span>Prepare</button></li>
+    <li><button data-go="examine"><span class="n">2</span>Examine</button></li>
+    <li><button data-go="review"><span class="n">3</span>Review</button></li>
+    <li><button data-go="confess"><span class="n">4</span>Confess</button></li>
+    <li><button data-go="after"><span class="n">5</span>Afterward</button></li>
+    <li class="journal"><button data-go="journal"><span class="n">☩</span>Journal</button></li>
+  </ol>
+</nav>
+
+<script>
+/* ---------- Examination content ---------- */
+const EXAM = [
+  { n:"1", t:"I am the Lord your God; you shall have no other gods before me.", q:[
+    "Have I neglected daily prayer, or let long stretches pass without turning to God?",
+    "Have I put something ahead of God: work, money, reputation, comfort, a relationship?",
+    "Have I dabbled in the occult, horoscopes, fortune-telling or superstition?",
+    "Have I deliberately doubted or denied a truth of the faith, or refused to learn it?",
+    "Have I despaired of God's mercy, or presumed on it to keep sinning?",
+    "Have I received Holy Communion while conscious of grave sin?"]},
+  { n:"2", t:"You shall not take the name of the Lord your God in vain.", q:[
+    "Have I used the name of God or of Jesus carelessly, in anger, or as a curse?",
+    "Have I broken a promise or vow made to God?",
+    "Have I mocked holy things, holy places, or people consecrated to God?"]},
+  { n:"3", t:"Remember to keep holy the Lord's Day.", q:[
+    "Have I missed Mass on a Sunday or holy day of obligation without a serious reason?",
+    "Have I been deliberately inattentive at Mass, or come late and left early without cause?",
+    "Have I made Sunday a day like any other, with needless work and no rest or time for others?"]},
+  { n:"4", t:"Honour your father and your mother.", q:[
+    "Have I been disrespectful, neglectful or unkind to my parents, or failed to help them in need?",
+    "Have I neglected my responsibilities to those in my family or in my care?",
+    "Have I been unjust, harsh or careless toward people I lead or manage?",
+    "Have I disrespected legitimate authority at work, in the Church or in civic life?"]},
+  { n:"5", t:"You shall not kill.", q:[
+    "Have I harmed anyone physically, or wished them harm?",
+    "Have I held on to anger or resentment, or refused to forgive?",
+    "Have I abused alcohol or drugs, or been reckless with my own health and life?",
+    "Have I led someone into sin by my words or example?",
+    "Have I taken part in, encouraged or supported an abortion?"]},
+  { n:"6", t:"You shall not commit adultery.", q:[
+    "Have I been unfaithful to my spouse, in deed or by an emotional affair?",
+    "Have I engaged in sexual activity outside of marriage?",
+    "Have I viewed pornography or sought out impure material?",
+    "Have I treated another person as an object for my own pleasure?"]},
+  { n:"7", t:"You shall not steal.", q:[
+    "Have I taken what isn't mine, or kept what I borrowed or found?",
+    "Have I cheated, been dishonest in business, or misused my employer's time or resources?",
+    "Have I failed to pay debts, or to pay others fairly?",
+    "Have I been wasteful, or ignored the poor when I could have helped?"]},
+  { n:"8", t:"You shall not bear false witness against your neighbour.", q:[
+    "Have I lied, or deceived to protect myself or get my way?",
+    "Have I gossiped, or harmed someone's reputation by revealing their faults without need?",
+    "Have I judged others rashly, assuming the worst of them?",
+    "Have I broken a confidence that was entrusted to me?"]},
+  { n:"9", t:"You shall not covet your neighbour's wife.", q:[
+    "Have I deliberately entertained impure thoughts or desires?",
+    "Have I dressed, spoken or acted to provoke lust in others?"]},
+  { n:"10", t:"You shall not covet your neighbour's goods.", q:[
+    "Have I envied others' possessions, success or gifts?",
+    "Have I let greed or the desire for more drive my decisions?",
+    "Have I been ungrateful for what God has given me?"]},
+  { n:"✦", t:"The precepts of the Church", q:[
+    "Have I failed to keep the days of fasting and abstinence?",
+    "Have I neglected to support the Church and the poor according to my means?",
+    "Have I let more than a year pass without confession, or failed to receive Communion in the Easter season?"]}
+];
+const groupName = n => n === '✦' ? 'Precepts of the Church' : 'Commandment ' + n;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Examination state (in memory until recorded) ---------- */
+const state = { marks: new Set() };
+const exam = $('exam');
+exam.innerHTML = EXAM.map((c,ci) => `
+  <details class="cmd">
+    <summary><span class="cmd-num">${c.n}</span><span class="cmd-title">${c.t}</span><span class="cmd-count" id="cnt-${ci}"></span></summary>
+    <div class="cmd-body">
+      ${c.q.map((q,qi) => `<label class="q"><input type="checkbox" data-k="${ci}-${qi}"><span>${q}</span></label>`).join('')}
+    </div>
+  </details>`).join('');
+
+exam.addEventListener('change', e => {
+  const k = e.target.dataset.k; if (!k) return;
+  e.target.checked ? state.marks.add(k) : state.marks.delete(k);
+  e.target.closest('.q').classList.toggle('on', e.target.checked);
+  const ci = k.split('-')[0];
+  const n = [...state.marks].filter(m => m.startsWith(ci + '-')).length;
+  $('cnt-' + ci).textContent = n || '';
+});
+
+function markedItems(){
+  const out = [];
+  EXAM.forEach((c,ci) => c.q.forEach((q,qi) => { if (state.marks.has(ci+'-'+qi)) out.push({ g:c.n, text:q }); }));
+  return out;
+}
+
+function renderReview(){
+  const items = markedItems(), notes = $('notes').value.trim();
+  if (!items.length && !notes){
+    $('review').innerHTML = `<p class="empty">Nothing marked yet. Go back to Examine and take your time, or write in your own words beneath the commandments.</p>`;
+    return;
+  }
+  const groups = {};
+  items.forEach(i => (groups[i.g] ||= []).push(i.text));
+  $('review').innerHTML = Object.entries(groups).map(([g,list]) => `<div class="review-group"><h3>${groupName(g)}</h3><ul>${list.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`).join('')
+    + (notes ? `<div class="review-group"><h3>My own words</h3><p class="plain">${esc(notes)}</p></div>` : '');
+}
+
+function renderOpening(){
+  const first = $('first').checked, since = $('since').value.trim();
+  $('openingLine').textContent = first
+    ? 'Bless me, Father, for I have sinned. This is my first confession.'
+    : 'Bless me, Father, for I have sinned. It has been ' + (since || '[how long]') + ' since my last confession.';
+}
+$('since').addEventListener('input', renderOpening);
+$('first').addEventListener('change', e => { $('since').disabled = e.target.checked; renderOpening(); });
+
+$('penance').addEventListener('change', e => {
+  $('penanceHint').textContent = e.target.checked ? 'Thanks be to God.' : 'Do it soon, ideally before you leave the church.';
+});
+
+function clearExam(){
+  state.marks.clear();
+  exam.querySelectorAll('input').forEach(i => { i.checked = false; i.closest('.q').classList.remove('on'); });
+  exam.querySelectorAll('.cmd-count').forEach(c => c.textContent = '');
+  exam.querySelectorAll('details').forEach(d => d.open = false);
+  ['notes','since','penanceText'].forEach(id => $(id).value = '');
+  $('first').checked = false; $('since').disabled = false;
+  $('penance').checked = false; $('penanceHint').textContent = 'Do it soon, ideally before you leave the church.';
+  fillSince(); renderOpening();
+}
+
+/* ---------- Journal storage (this device only; optional passcode encryption) ---------- */
+const KEY = 'return.journal.v1';
+const store = { entries:[], unlocked:false, key:null, salt:null };
+
+const b64e = u8 => { let s=''; for (let i=0;i<u8.length;i+=0x8000) s += String.fromCharCode.apply(null, u8.subarray(i,i+0x8000)); return btoa(s); };
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+function readRaw(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } }
+const isEncrypted = () => !!(readRaw() || {}).enc;
+const isLocked = () => isEncrypted() && !store.unlocked;
+
+async function deriveKey(pass, salt){
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', salt, iterations:250000, hash:'SHA-256' }, base, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
+}
+function loadPlain(){
+  const r = readRaw();
+  if (!r){ store.entries = []; store.unlocked = true; return; }
+  if (!r.enc){ store.entries = Array.isArray(r.entries) ? r.entries : []; store.unlocked = true; }
+}
+async function unlock(pass){
+  const r = readRaw(); if (!r || !r.enc) return true;
+  try {
+    const salt = b64d(r.salt), key = await deriveKey(pass, salt);
+    const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64d(r.iv) }, key, b64d(r.data));
+    store.entries = JSON.parse(new TextDecoder().decode(pt)).entries || [];
+    Object.assign(store, { key, salt, unlocked:true });
+    return true;
+  } catch { return false; }
+}
+function lock(){ if (!isEncrypted()) return; Object.assign(store, { entries:[], key:null, salt:null, unlocked:false }); }
+async function persist(){
+  try {
+    const body = JSON.stringify({ entries: store.entries });
+    if (store.key){
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = new Uint8Array(await crypto.subtle.encrypt({ name:'AES-GCM', iv }, store.key, new TextEncoder().encode(body)));
+      localStorage.setItem(KEY, JSON.stringify({ enc:1, salt:b64e(store.salt), iv:b64e(iv), data:b64e(ct) }));
+    } else {
+      localStorage.setItem(KEY, body);
+    }
+    return true;
+  } catch { alert('Your journal could not be saved: this browser is blocking storage.'); return false; }
+}
+
+/* Lock again if the app has been in the background for two minutes */
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ hiddenAt = Date.now(); return; }
+  if (isEncrypted() && store.unlocked && Date.now() - hiddenAt > 120000){
+    lock();
+    if (['journal','record'].includes(current)) requireUnlock(() => go(current));
+  }
+});
+
+let afterUnlock = null;
+function requireUnlock(then){ afterUnlock = then; $('unlockPc').value = ''; $('unlockStatus').textContent = ''; show('lock'); setTimeout(() => $('unlockPc').focus(), 50); }
+async function doUnlock(){
+  $('unlockBtn').disabled = true; $('unlockStatus').textContent = 'Unlocking…';
+  const ok = await unlock($('unlockPc').value);
+  $('unlockBtn').disabled = false;
+  if (!ok){ $('unlockStatus').textContent = 'That passcode didn’t open the journal. Try again.'; return; }
+  fillSince();
+  const next = afterUnlock; afterUnlock = null; (next || (() => go('journal')))();
+}
+$('unlockBtn').addEventListener('click', doUnlock);
+$('unlockPc').addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
+$('eraseLocked').addEventListener('click', () => {
+  if (!confirm('Erase your entire journal? This cannot be undone.')) return;
+  localStorage.removeItem(KEY); Object.assign(store, { entries:[], key:null, salt:null, unlocked:true });
+  go('journal');
+});
+
+/* ---------- Dates ---------- */
+const todayISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const fmtDate = iso => new Date(iso + 'T12:00:00').toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+function daysSince(iso){ return Math.round((new Date(todayISO()+'T12:00:00') - new Date(iso+'T12:00:00')) / 86400000); }
+function humanSpan(days){
+  if (days <= 0) return 'today';
+  if (days === 1) return 'one day';
+  if (days < 14) return days + ' days';
+  if (days < 60) return Math.round(days/7) + ' weeks';
+  if (days < 730) { const m = Math.round(days/30.44); return m === 1 ? 'one month' : m + ' months'; }
+  const y = Math.round(days/365.25); return y + ' years';
+}
+const sorted = () => [...store.entries].sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.created||0) - (a.created||0));
+function fillSince(){
+  if (!store.unlocked || $('since').value.trim() || !store.entries.length) return;
+  const d = daysSince(sorted()[0].date);
+  if (d > 0){ $('since').value = humanSpan(d); renderOpening(); }
+}
+
+/* ---------- Record form ---------- */
+let draft = null; // { id?, items:[{g,text}], ... }
+function openRecord(entry, isNew){
+  draft = JSON.parse(JSON.stringify(entry));
+  draft.isNew = isNew;
+  $('recordTitle').textContent = isNew ? 'Record' : 'Edit entry';
+  $('recordKicker').textContent = isNew ? 'For remembrance' : fmtDate(entry.date);
+  $('rDate').value = draft.date || todayISO();
+  $('rPlace').value = draft.place || '';
+  $('rNotes').value = draft.notes || '';
+  $('rPenance').value = draft.penance || '';
+  $('rPenanceDone').checked = !!draft.penanceDone;
+  $('rGrace').value = draft.grace || '';
+  renderDraftItems();
+  go('record');
+}
+function renderDraftItems(){
+  $('rItems').innerHTML = draft.items.map((it,i) => `<li><span><small>${groupName(it.g)}</small>${esc(it.text)}</span><button class="x" data-rm="${i}" aria-label="Remove this item">×</button></li>`).join('');
+  $('rItemsEmpty').hidden = draft.items.length > 0;
+}
+$('rItems').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; draft.items.splice(+b.dataset.rm, 1); renderDraftItems(); });
+
+$('recordBtn').addEventListener('click', () => {
+  const build = () => openRecord({
+    date: todayISO(), place:'', items: markedItems(), notes: $('notes').value.trim(),
+    penance: $('penanceText').value.trim(), penanceDone: $('penance').checked, grace:''
+  }, true);
+  isLocked() ? requireUnlock(build) : build();
+});
+
+$('rSave').addEventListener('click', async () => {
+  const entry = {
+    id: draft.id || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)),
+    created: draft.created || Date.now(),
+    date: $('rDate').value || todayISO(),
+    place: $('rPlace').value.trim(),
+    items: draft.items,
+    notes: $('rNotes').value.trim(),
+    penance: $('rPenance').value.trim(),
+    penanceDone: $('rPenanceDone').checked,
+    grace: $('rGrace').value.trim()
+  };
+  const i = store.entries.findIndex(e => e.id === entry.id);
+  i >= 0 ? store.entries[i] = entry : store.entries.push(entry);
+  if (!(await persist())) return;
+  const wasFromExam = draft.isNew && draft.fromExam !== false && !draft.past;
+  draft = null;
+  if (wasFromExam) clearExam();
+  go('journal');
+});
+$('rCancel').addEventListener('click', () => { const wasPast = draft && (draft.past || !draft.isNew); draft = null; go(wasPast ? 'journal' : 'after'); });
+
+/* ---------- Journal view ---------- */
+function renderJournal(){
+  const list = sorted();
+  if (!list.length){
+    $('jSummary').innerHTML = `<p class="lede">No confessions recorded yet. After your next confession, choose <em>Record this confession</em>, or add one from the past below.</p>`;
+    $('jPattern').innerHTML = ''; $('jList').innerHTML = '';
+  } else {
+    const d = daysSince(list[0].date), first = list[list.length-1].date;
+    $('jSummary').innerHTML = `<p class="since-last">${d <= 0 ? 'Your last confession was today.' : 'It has been ' + humanSpan(d) + ' since your last confession.'}</p>
+      <p class="lede">${list.length} confession${list.length === 1 ? '' : 's'} recorded since ${fmtDate(first)}.</p>`;
+
+    const counts = {};
+    list.forEach(e => new Set((e.items||[]).map(i => i.g)).forEach(g => counts[g] = (counts[g]||0) + 1));
+    const rows = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+    const max = rows.length ? rows[0][1] : 1;
+    $('jPattern').innerHTML = rows.length ? `<h2>What I've brought</h2>
+      <p class="hint">How many confessions touched each commandment. A place to notice where grace is still at work.</p>
+      <div class="pattern">${rows.map(([g,n]) => `<span class="lbl">${groupName(g)}</span><span class="bar" style="width:${Math.max(6, n/max*100)}%"></span><span class="num">${n}</span>`).join('')}</div>` : '';
+
+    $('jList').innerHTML = list.map(e => {
+      const groups = {}; (e.items||[]).forEach(i => (groups[i.g] ||= []).push(i.text));
+      return `<details class="entry">
+        <summary><span class="entry-date">${fmtDate(e.date)}</span><span class="entry-sub">${esc(e.place || 'Place not recorded')}${e.penance && !e.penanceDone ? ' · penance outstanding' : ''}</span></summary>
+        <div class="entry-body">
+          ${e.grace ? `<div class="grace">${esc(e.grace)}</div>` : ''}
+          ${Object.entries(groups).map(([g,l]) => `<div class="review-group"><h3>${groupName(g)}</h3><ul>${l.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`).join('')}
+          ${e.notes ? `<h3>In my own words</h3><p class="plain">${esc(e.notes)}</p>` : ''}
+          ${e.penance ? `<h3>Penance</h3><label class="toggle"><input type="checkbox" data-pen="${e.id}" ${e.penanceDone ? 'checked' : ''}> <span>${esc(e.penance)}</span></label>` : ''}
+          <div class="actions" style="margin:1em 0 0">
+            <button class="small" data-edit="${e.id}">Edit</button>
+            <button class="small danger" data-del="${e.id}">Delete</button>
+          </div>
+        </div>
+      </details>`;
+    }).join('');
+  }
+  renderPasscodeState();
+}
+
+$('jList').addEventListener('click', async e => {
+  const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]');
+  if (ed){ const en = store.entries.find(x => x.id === ed.dataset.edit); if (en) openRecord(en, false); }
+  if (del){
+    const en = store.entries.find(x => x.id === del.dataset.del);
+    if (!en || !confirm('Delete the entry for ' + fmtDate(en.date) + '? This cannot be undone.')) return;
+    store.entries = store.entries.filter(x => x.id !== en.id);
+    await persist(); renderJournal();
+  }
+});
+$('jList').addEventListener('change', async e => {
+  const id = e.target.dataset.pen; if (!id) return;
+  const en = store.entries.find(x => x.id === id); if (!en) return;
+  en.penanceDone = e.target.checked; await persist(); renderJournal();
+});
+
+$('addPast').addEventListener('click', () => openRecord({ date:'', place:'', items:[], notes:'', penance:'', penanceDone:true, grace:'', past:true }, true));
+
+/* ---------- Passcode ---------- */
+function renderPasscodeState(){
+  const enc = isEncrypted() || !!store.key;
+  $('pcState').textContent = enc
+    ? 'Your journal is encrypted with a passcode. It locks when the app has been in the background for two minutes.'
+    : 'Add a passcode to encrypt your journal on this device. If you forget it, the journal cannot be recovered.';
+  $('pcSave').textContent = enc ? 'Change passcode' : 'Set passcode';
+  $('pcRemove').hidden = !enc; $('lockNow').hidden = !enc;
+}
+$('pcSave').addEventListener('click', async () => {
+  const a = $('pc1').value, b = $('pc2').value;
+  if (a.length < 4){ $('pcStatus').textContent = 'Use at least 4 characters.'; return; }
+  if (a !== b){ $('pcStatus').textContent = 'The two passcodes don’t match.'; return; }
+  $('pcStatus').textContent = 'Encrypting…';
+  store.salt = crypto.getRandomValues(new Uint8Array(16));
+  store.key = await deriveKey(a, store.salt);
+  if (await persist()){ $('pc1').value = $('pc2').value = ''; $('pcStatus').textContent = 'Passcode set. Your journal is encrypted.'; renderPasscodeState(); }
+});
+$('pcRemove').addEventListener('click', async () => {
+  if (!confirm('Remove the passcode? Your journal will be stored on this device without encryption.')) return;
+  store.key = null; store.salt = null;
+  if (await persist()){ $('pcStatus').textContent = 'Passcode removed.'; renderPasscodeState(); }
+});
+$('lockNow').addEventListener('click', () => { lock(); requireUnlock(() => go('journal')); });
+
+/* ---------- Backup ---------- */
+$('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({ app:'Return', version:1, exported:new Date().toISOString(), entries:store.entries }, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'return-journal-' + todayISO() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  $('bkStatus').textContent = 'Backup exported. Keep the file somewhere private.';
+});
+$('importBtn').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data.entries)) throw 0;
+    let added = 0;
+    data.entries.forEach(en => { if (en && en.id && en.date && !store.entries.some(x => x.id === en.id)){ store.entries.push(en); added++; } });
+    await persist(); renderJournal();
+    $('bkStatus').textContent = added ? `Imported ${added} entr${added === 1 ? 'y' : 'ies'}.` : 'Nothing new to import; those entries are already here.';
+  } catch { $('bkStatus').textContent = 'That file isn’t a Return backup.'; }
+});
+
+$('deleteAll').addEventListener('click', () => {
+  if (!confirm('Delete every record in your journal? This cannot be undone.')) return;
+  localStorage.removeItem(KEY);
+  Object.assign(store, { entries:[], key:null, salt:null, unlocked:true });
+  $('pcStatus').textContent = ''; $('bkStatus').textContent = '';
+  renderJournal();
+});
+
+/* ---------- Navigation ---------- */
+let current = 'prepare';
+function show(step){
+  document.querySelectorAll('main > section').forEach(s => {
+    s.hidden = s.id !== 's-' + step;
+    if (!s.hidden){ s.classList.remove('fade'); void s.offsetWidth; s.classList.add('fade'); }
+  });
+  const navStep = step === 'record' ? (draft && !draft.isNew || draft && draft.past ? 'journal' : 'after') : step === 'lock' ? 'journal' : step;
+  document.querySelectorAll('nav button').forEach(b => b.dataset.go === navStep ? b.setAttribute('aria-current','step') : b.removeAttribute('aria-current'));
+  document.body.classList.toggle('after', step === 'after' || step === 'record');
+  window.scrollTo({ top:0 });
+}
+function go(step){
+  if ((step === 'journal' || step === 'record') && isLocked()){ requireUnlock(() => go(step)); return; }
+  if (step === 'record' && !draft){ step = 'after'; }
+  current = step;
+  if (step === 'review') renderReview();
+  if (step === 'confess') renderOpening();
+  if (step === 'journal') renderJournal();
+  show(step);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+
+$('clearAll').addEventListener('click', () => {
+  clearExam();
+  const btn = $('clearAll'); btn.textContent = 'Cleared'; btn.disabled = true;
+  setTimeout(() => { btn.textContent = 'Clear without recording'; btn.disabled = false; go('prepare'); }, 1200);
+});
+
+/* ---------- Start ---------- */
+loadPlain(); fillSince(); renderOpening();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
