@@ -10,7 +10,7 @@
 //
 // Only the app's own files and fonts are cached. Your examination and journal are never stored here.
 
-const VERSION = 'return-v6';
+const VERSION = 'return-v7';
 const SHELL_CACHE = VERSION + '-shell';
 const FONT_CACHE = 'return-fonts-v1';           // kept across app versions so fonts aren't refetched
 const CORE = ['./', './index.html', './app.webmanifest'];
@@ -64,7 +64,8 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== SHELL_CACHE && k !== FONT_CACHE).map(k => caches.delete(k)));
+    // All the apps share one origin (keithintrinidad.github.io), so only remove this app's own old caches
+    await Promise.all(keys.filter(k => k.startsWith('return-') && k !== SHELL_CACHE && k !== FONT_CACHE).map(k => caches.delete(k)));
     await self.clients.claim();
   })());
 });
